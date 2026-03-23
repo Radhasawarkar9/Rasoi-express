@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RasoiExpress — Admin Panel</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f1e;--card:#111827;--card2:#1a2236;--border:#1e2d45;
+  --text:#f1f5f9;--sub:#64748b;--muted:#374151;
+  --blue:#3b82f6;--blu:#60a5fa;--blud:#1d4ed8;
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;
+  --purple:#8b5cf6;--orange:#f97316;
+  --r:14px;--rs:9px;--shadow:0 24px 60px rgba(0,0,0,.6);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ══ LOGIN ══ */
+#loginScreen{display:none;min-height:100vh;
+  background:radial-gradient(ellipse at 65% 0,rgba(59,130,246,.13),transparent 55%),
+             radial-gradient(ellipse at 10% 85%,rgba(139,92,246,.09),transparent 50%),var(--bg);
+  align-items:center;justify-content:center;padding:20px}
+#loginScreen.v{display:flex}
+.lw{width:100%;max-width:920px;display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);min-height:540px}
+
+/* Left */
+.ll{background:linear-gradient(150deg,#0d1b3e,#09132a);padding:52px 44px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.ll::before{content:'';position:absolute;top:-80px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.14),transparent 70%)}
+.ll-ico{font-size:2.4rem;margin-bottom:8px}
+.ll-title{font-family:Georgia,serif;font-size:1.75rem;font-weight:900;color:#fff;line-height:1.2;margin-bottom:11px}
+.ll-title em{color:var(--blu);font-style:italic}
+.ll-sub{font-size:.82rem;color:rgba(255,255,255,.42);line-height:1.65;margin-bottom:30px}
+.ll-perks{list-style:none}
+.ll-perk{display:flex;align-items:center;gap:11px;margin-bottom:13px;font-size:.82rem;color:rgba(255,255,255,.62);font-weight:600}
+.pio{width:32px;height:32px;border-radius:9px;background:rgba(59,130,246,.18);display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0;border:1px solid rgba(59,130,246,.2)}
+.ll-warn{margin-top:26px;padding:11px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:9px;font-size:.72rem;color:rgba(255,100,100,.75);display:flex;align-items:center;gap:7px}
+
+/* Right */
+.lr{background:var(--card);padding:52px 44px;display:flex;flex-direction:column;justify-content:center}
+.lr-tag{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--blu);margin-bottom:5px}
+.lr-h{font-size:1.5rem;font-weight:900;margin-bottom:3px}
+.lr-sub{font-size:.79rem;color:var(--sub);margin-bottom:26px}
+
+/* Hint box */
+.hint{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:var(--rs);padding:11px 14px;margin-bottom:18px;font-size:.78rem;color:rgba(255,255,255,.5)}
+.hint strong{color:var(--blu);font-family:'Courier New',monospace;font-size:.84rem}
+.hint-row{display:flex;justify-content:space-between;margin-top:4px}
+
+/* Form */
+.field{margin-bottom:17px}
+.field label{display:block;font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--sub);margin-bottom:6px}
+.iw{position:relative}
+.iico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.88rem;color:var(--sub);pointer-events:none;transition:color .2s}
+.iw:focus-within .iico{color:var(--blu)}
+.iw input{width:100%;padding:12px 40px;background:#0d1424;border:1.5px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:.88rem;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s}
+.iw input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.14)}
+.iw input::placeholder{color:var(--sub)}
+.pwtog{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--sub);cursor:pointer;font-size:.9rem;padding:0;line-height:1;transition:color .18s}
+.pwtog:hover{color:var(--blu)}
+
+.lbtn{width:100%;padding:13px;background:linear-gradient(135deg,var(--blue),var(--blud));color:#fff;border:none;border-radius:var(--rs);font-size:.93rem;font-weight:800;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;box-shadow:0 4px 20px rgba(59,130,246,.35);margin-top:5px}
+.lbtn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(59,130,246,.45)}
+.lbtn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.lbtn .bsp{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.lbtn.loading .bsp{display:block}.lbtn.loading .btx{display:none}
+
+.alert{border-radius:var(--rs);padding:11px 14px;font-size:.82rem;font-weight:600;margin-bottom:16px;display:none;align-items:center;gap:8px;animation:fi .25s ease}
+.alert.show{display:flex}
+.alert.err{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.28)}
+.alert.ok{background:rgba(34,197,94,.1);color:#86efac;border:1px solid rgba(34,197,94,.28)}
+@keyframes fi{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.backend-status{text-align:center;margin-top:20px;font-size:.7rem;color:var(--sub)}
+.sdot{width:8px;height:8px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px}
+.sdot.ok{background:#22c55e;box-shadow:0 0 5px #22c55e;animation:pulse 2s infinite}
+.sdot.err{background:var(--red);box-shadow:0 0 5px var(--red)}
+.sdot.check{background:var(--yellow);animation:pulse 1s infinite}
+
+/* ══ DASHBOARD ══ */
+#dashboard{display:none}
+#dashboard.v{display:block}
+
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+.tbl{display:flex;align-items:center;gap:12px}
+.tbbrand{font-size:1rem;font-weight:900;color:var(--text)}.tbbrand span{color:var(--blu)}
+.tbadge{padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.24)}
+.tbr{display:flex;align-items:center;gap:9px}
+.tbav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blud));display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:#fff;border:2px solid var(--border)}
+.tbname{font-size:.82rem;font-weight:800;color:var(--text)}
+.tbrole{font-size:.63rem;color:var(--blu);font-weight:700;text-transform:uppercase}
+.out-btn{padding:6px 14px;border-radius:var(--rs);border:1px solid rgba(239,68,68,.28);background:rgba(239,68,68,.07);color:#fca5a5;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit}
+.out-btn:hover{background:rgba(239,68,68,.18)}
+
+.main{padding:26px;max-width:1400px;margin:0 auto}
+
+/* Session bar */
+.sess-bar{display:flex;align-items:center;gap:10px;padding:9px 15px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.17);border-radius:var(--r);margin-bottom:22px;font-size:.77rem;color:rgba(255,255,255,.5);flex-wrap:wrap}
+.sess-bar strong{color:var(--text)}
+.sess-warn{margin-left:auto;color:rgba(239,68,68,.65);font-size:.69rem}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:22px}
+.tab{padding:10px 18px;background:none;border:none;color:var(--sub);font-size:.83rem;font-weight:700;cursor:pointer;position:relative;transition:color .2s;font-family:inherit}
+.tab::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--blu);transform:scaleX(0);transition:.2s}
+.tab.active{color:var(--blu)}.tab.active::after{transform:scaleX(1)}
+.tc{display:none}.tc.active{display:block}
+
+/* Section header */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.sh-l{display:flex;align-items:center;gap:9px}
+.sh-title{font-size:1.08rem;font-weight:800;color:var(--text)}
+.sh-cnt{font-size:.66rem;background:rgba(59,130,246,.15);color:var(--blu);padding:3px 9px;border-radius:20px;font-weight:800}
+.sh-r{display:flex;gap:7px;flex-wrap:wrap}
+
+/* Stats */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:26px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.sc:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc.blue::before{background:linear-gradient(90deg,var(--blue),var(--blu))}
+.sc.green::before{background:linear-gradient(90deg,var(--green),#4ade80)}
+.sc.yellow::before{background:linear-gradient(90deg,var(--yellow),#fde68a)}
+.sc.purple::before{background:linear-gradient(90deg,var(--purple),#a78bfa)}
+.sc.red::before{background:linear-gradient(90deg,var(--red),#fca5a5)}
+.sc.orange::before{background:linear-gradient(90deg,var(--orange),#fdba74)}
+.sn{font-size:1.9rem;font-weight:900;line-height:1.1;margin-bottom:3px}
+.sl{font-size:.65rem;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.si{position:absolute;bottom:12px;right:14px;font-size:1.5rem;opacity:.13}
+
+/* Buttons */
+.btn{padding:7px 14px;border-radius:var(--rs);border:1px solid var(--border);background:var(--card);color:var(--sub);font-size:.76rem;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:hover{border-color:var(--blu);color:var(--blu)}
+.btn.grn{border-color:rgba(34,197,94,.3);color:var(--green)}.btn.grn:hover{background:rgba(34,197,94,.07)}
+.btn.red{border-color:rgba(239,68,68,.3);color:#fca5a5}.btn.red:hover{background:rgba(239,68,68,.07)}
+
+/* Search */
+.srch-w{position:relative}
+.srch-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.82rem;color:var(--sub);pointer-events:none}
+.srch{padding:7px 11px 7px 30px;background:#0d1424;border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:.8rem;font-family:inherit;outline:none;transition:border-color .18s;width:200px}
+.srch:focus{border-color:var(--blue)}
+.srch::placeholder{color:var(--sub)}
+.fsel{padding:7px 10px;background:#0d1424;border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:.78rem;cursor:pointer;outline:none;font-family:inherit}
+
+/* Table */
+.tc-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:26px}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead{background:var(--bg)}
+th{padding:12px 14px;text-align:left;font-size:.61rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:13px 14px;border-top:1px solid rgba(30,45,69,.5);vertical-align:middle}
+tr:hover td{background:rgba(59,130,246,.035)}
+.mono{font-family:'Courier New',monospace;font-size:.77rem;color:var(--blu)}
+.mu{color:var(--sub);font-size:.73rem}
+.uc{display:flex;align-items:center;gap:9px}
+.uav{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;color:#fff;flex-shrink:0;border:2px solid var(--border)}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:800;white-space:nowrap}
+.p-placed{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.25)}
+.p-preparing{background:rgba(249,115,22,.12);color:#fb923c;border:1px solid rgba(249,115,22,.25)}
+.p-on_the_way{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+.p-nearby{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
+.p-delivered{background:rgba(34,197,94,.1);color:#86efac;border:1px solid rgba(34,197,94,.2)}
+.p-active{background:rgba(59,130,246,.1);color:#7dd3fc;border:1px solid rgba(59,130,246,.2)}
+.p-none{background:rgba(100,116,139,.1);color:var(--sub);border:1px solid rgba(100,116,139,.2)}
+.sbar{display:flex;gap:3px;align-items:center}
+.sd{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sd.done{background:var(--green)}.sd.active{background:var(--blu);box-shadow:0 0 4px var(--blue)}
+.act-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--sub);font-size:.68rem;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit}
+.act-btn:hover{border-color:var(--blu);color:var(--blu)}
+.act-btn.d:hover{border-color:var(--red);color:var(--red)}
+.arow{display:flex;gap:4px}
+
+/* Loading */
+.lb{text-align:center;padding:50px 20px;color:var(--sub);font-size:.84rem}
+.sp{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+
+/* Modal */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
+.mo.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.7);animation:mop .22s ease}
+@keyframes mop{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.mhdr{padding:18px 22px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:5}
+.mttl{font-size:.95rem;font-weight:800}
+.mclose{background:none;border:none;color:var(--sub);font-size:1.15rem;cursor:pointer;padding:3px 7px;border-radius:6px;transition:all .18s}
+.mclose:hover{background:rgba(239,68,68,.1);color:var(--red)}
+.mbody{padding:20px 22px}
+.mftr{padding:13px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--card)}
+.mbtn{padding:8px 18px;border-radius:var(--rs);border:none;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit}
+.mbtn.pr{background:linear-gradient(135deg,var(--blue),var(--blud));color:#fff}
+.mbtn.gh{background:var(--card2);color:var(--sub);border:1px solid var(--border)}
+.mbtn.gh:hover{border-color:var(--blu);color:var(--blu)}
+.mbtn.dn{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}
+.mbtn.dn:hover{background:rgba(239,68,68,.2)}
+.dr{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(30,45,69,.45);gap:12px}
+.dr:last-child{border-bottom:none}
+.dl{font-size:.68rem;font-weight:700;color:var(--sub);text-transform:uppercase;flex-shrink:0}
+.dv{font-size:.82rem;font-weight:600;color:var(--text);text-align:right;max-width:320px;word-break:break-all}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.8rem;color:var(--text);font-weight:600;box-shadow:var(--shadow);transform:translateY(60px);opacity:0;transition:all .3s;z-index:1000;max-width:280px}
+#toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:768px){
+  .lw{grid-template-columns:1fr}.ll{display:none}
+  .lr{padding:34px 24px}
+  .sg{grid-template-columns:repeat(2,1fr)}
+  .srch{width:100%}
+  .main{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginScreen">
+  <div class="lw">
+    <!-- Left branding panel -->
+    <div class="ll">
+      <div class="ll-ico">🍛</div>
+      <div class="ll-title">Rasoi<em>Express</em><br>Admin Panel</div>
+      <p class="ll-sub">Secure administrator dashboard. Authorised access only.</p>
+      <ul class="ll-perks">
+        <li class="ll-perk"><div class="pio">👤</div>View all registered users & data</li>
+        <li class="ll-perk"><div class="pio">📦</div>Monitor all orders in real-time</li>
+        <li class="ll-perk"><div class="pio">📊</div>Full database access & stats</li>
+        <li class="ll-perk"><div class="pio">🗑️</div>Manage & delete user records</li>
+      </ul>
+      <div class="ll-warn">🔒 Restricted to admin personnel only. Unauthorised attempts are blocked.</div>
+    </div>
+
+    <!-- Right login form -->
+    <div class="lr">
+      <div class="lr-tag">Administrator Access</div>
+      <div class="lr-h">Admin Login</div>
+      <p class="lr-sub">Enter fixed admin credentials to access the dashboard.</p>
+
+      <!-- Credentials hint (remove in production) -->
+      <div class="alert" id="loginAlert">
+        <span id="alertIco">❌</span><span id="alertMsg"></span>
+      </div>
+
+      <form onsubmit="doLogin(event)">
+        <div class="field">
+          <label>Admin ID</label>
+          <div class="iw">
+            <span class="iico">👤</span>
+            <input type="text" id="adminId" placeholder="Enter admin ID" required autocomplete="username"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="iw">
+            <span class="iico">🔒</span>
+            <input type="password" id="adminPass" placeholder="Enter admin password" required autocomplete="current-password"/>
+            <button type="button" class="pwtog" onclick="tglPw()">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="lbtn" id="loginBtn">
+          <div class="bsp"></div>
+          <span class="btx">🔐 Access Dashboard</span>
+        </button>
+      </form>
+
+      <div class="backend-status">
+        <span class="sdot check" id="apiDot"></span>
+        <span id="apiStatus">Checking backend…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashboard">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tbl">
+      <div class="tbbrand">🍛 Rasoi<span>Express</span></div>
+      <span class="tbadge">🔐 Admin Panel</span>
+    </div>
+    <div class="tbr">
+      <div>
+        <div class="tbname" id="tbName">admin123</div>
+        <div class="tbrole">Super Administrator</div>
+      </div>
+      <div class="tbav">A</div>
+      <button class="out-btn" onclick="doLogout()">↩ Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Session info bar -->
+    <div class="sess-bar">
+      <span style="color:var(--green);font-weight:700">✅ Secure Admin Session Active</span>
+      <span>|</span>
+      <span>Logged in as: <strong>admin123</strong></span>
+      <span>|</span>
+      <span>Started: <strong id="loginTime">—</strong></span>
+      <span class="sess-warn">⚠️ Auto-expires in 2 hours</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tab-ov"     onclick="showTab('ov')">📊 Overview</button>
+      <button class="tab"        id="tab-users"  onclick="showTab('users')">👤 All Users</button>
+      <button class="tab"        id="tab-orders" onclick="showTab('orders')">📦 All Orders</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="tc active" id="tc-ov">
+      <div class="sh">
+        <div class="sh-l"><div class="sh-title">📊 Dashboard Overview</div></div>
+        <div class="sh-r">
+          <button class="btn grn" onclick="exportUsers()">📤 Export Users CSV</button>
+          <button class="btn grn" onclick="exportOrders()">📤 Export Orders CSV</button>
+          <button class="btn"     onclick="refresh()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="sg" id="statsGrid">
+        <div class="sc blue"><div class="sp" style="width:20px;height:20px;margin:4px auto 0"></div><div class="sl">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="tc" id="tc-users">
+      <div class="sh">
+        <div class="sh-l">
+          <div class="sh-title">👤 All Registered Users</div>
+          <span class="sh-cnt" id="uCnt">…</span>
+        </div>
+        <div class="sh-r">
+          <div class="srch-w">
+            <span class="srch-ico">🔍</span>
+            <input class="srch" id="uSrch" placeholder="Search name, email…" oninput="filterU(this.value)"/>
+          </div>
+          <button class="btn grn" onclick="exportUsers()">📤 Export CSV</button>
+          <button class="btn" onclick="loadUsers()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="tc-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>User</th><th>Email</th><th>Phone</th>
+            <th>Address</th><th>Orders</th><th>Total Spent</th>
+            <th>Profile Color</th><th>Joined</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="uBody"><tr><td colspan="10"><div class="lb"><div class="sp"></div>Loading…</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="tc" id="tc-orders">
+      <div class="sh">
+        <div class="sh-l">
+          <div class="sh-title">📦 All Orders</div>
+          <span class="sh-cnt" id="oCnt">…</span>
+        </div>
+        <div class="sh-r">
+          <div class="srch-w">
+            <span class="srch-ico">🔍</span>
+            <input class="srch" id="oSrch" placeholder="Search order ID…" oninput="filterO(this.value)"/>
+          </div>
+          <select class="fsel" id="oSF" onchange="filterO('')">
+            <option value="">All Status</option>
+            <option value="placed">🟡 Placed</option>
+            <option value="preparing">🟠 Preparing</option>
+            <option value="on_the_way">🔵 On the Way</option>
+            <option value="nearby">🟢 Nearby</option>
+            <option value="delivered">✅ Delivered</option>
+          </select>
+          <button class="btn grn" onclick="exportOrders()">📤 Export CSV</button>
+          <button class="btn" onclick="loadOrders()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="tc-wrap">
+        <table>
+          <thead><tr>
+            <th>Order ID</th><th>Customer</th><th>Status</th><th>Step</th>
+            <th>Items</th><th>Total</th><th>Restaurant</th><th>Address</th><th>Placed At</th><th>Action</th>
+          </tr></thead>
+          <tbody id="oBody"><tr><td colspan="10"><div class="lb"><div class="sp"></div>Loading…</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="mo" id="uModal">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mttl" id="uModalTitle">👤 User Details</div>
+      <button class="mclose" onclick="closeM('uModal')">✕</button>
+    </div>
+    <div class="mbody" id="uModalBody"></div>
+    <div class="mftr">
+      <button class="mbtn dn" onclick="prepDelete()">🗑️ Delete User</button>
+      <button class="mbtn gh" onclick="closeM('uModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="mo" id="cModal">
+  <div class="modal" style="max-width:400px">
+    <div class="mhdr">
+      <div class="mttl">⚠️ Confirm Delete</div>
+      <button class="mclose" onclick="closeM('cModal')">✕</button>
+    </div>
+    <div class="mbody" style="text-align:center;padding:24px">
+      <div style="font-size:2.8rem;margin-bottom:14px">🗑️</div>
+      <div style="font-size:.9rem;font-weight:700;margin-bottom:8px" id="cMsg">Are you sure?</div>
+      <div style="font-size:.8rem;color:var(--sub)">This is <strong style="color:var(--red)">permanent</strong>. All orders for this user will also be deleted.</div>
+    </div>
+    <div class="mftr">
+      <button class="mbtn gh" onclick="closeM('cModal')">Cancel</button>
+      <button class="mbtn dn" id="cBtn" onclick="execDelete()">🗑️ Yes, Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   CONFIGURATION
+══════════════════════════════════════════════ */
+const API = 'http://localhost:5000/api';
+
+/* ── Admin token stored in memory (NOT localStorage for security) ── */
+let ADMIN_TOKEN = null;    // set after login
+let allUsers    = [];
+let allOrders   = [];
+let viewUid     = null;
+let delUid      = null;
+
+/* ══ HELPERS ══ */
+const $ = id => document.getElementById(id);
+
+function toast(m, t='ok') {
+  const e=$('toast');
+  e.textContent = m;
+  e.style.borderColor = t==='err' ? 'rgba(239,68,68,.4)' : '#1e2d45';
+  e.style.color = t==='err' ? '#fca5a5' : '#f1f5f9';
+  e.classList.add('show');
+  clearTimeout(e._t);
+  e._t = setTimeout(() => e.classList.remove('show'), 3500);
+}
+
+function fmtD(s) {
+  if (!s) return '—';
+  try { return new Date(s).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}); }
+  catch { return s; }
+}
+
+function ini(n) { return (n||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); }
+
+function spill(s) {
+  const L={placed:'🟡 Placed',preparing:'🟠 Preparing',on_the_way:'🔵 On the Way',nearby:'🟢 Nearby',delivered:'✅ Delivered'};
+  return `<span class="pill p-${s||'placed'}">${L[s]||s||'—'}</span>`;
+}
+
+function sbar(step) {
+  const s=step??0;
+  return `<div class="sbar">${[0,1,2,3,4].map(i=>`<div class="sd ${i<s?'done':i===s?'active':''}"></div>`).join('')}<span style="font-size:.63rem;color:var(--sub);margin-left:4px">${s}/4</span></div>`;
+}
+
+function ilist(items) {
+  if (!items) return '—';
+  let a; try { a=typeof items==='string'?JSON.parse(items):items; } catch { return '—'; }
+  if (!Array.isArray(a)) return '—';
+  const n=a.map(i=>typeof i==='string'?i:(i.name||'?'));
+  return n.length ? n.slice(0,2).join(', ')+(n.length>2?` <span class="mu">+${n.length-2}</span>`:'') : '—';
+}
+
+function csvE(v) { const s=String(v||''); return s.includes(',')||s.includes('"')||s.includes('\n')?`"${s.replace(/"/g,'""')}"`:s; }
+function dlCSV(fn,rows,hdrs) {
+  const csv=[hdrs.join(','),...rows.map(r=>r.map(csvE).join(','))].join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download=fn; a.click();
+  toast(`📤 ${fn} downloaded!`);
+}
+
+/* ── Authenticated fetch — sends admin token in header ── */
+async function adminFetch(path, opts={}) {
+  const h = { 'Content-Type':'application/json', ...(opts.headers||{}) };
+  if (ADMIN_TOKEN) h['X-Admin-Token'] = ADMIN_TOKEN;
+  return fetch(`${API}${path}`, { ...opts, headers:h, credentials:'include' });
+}
+
+/* ══ PASSWORD TOGGLE ══ */
+function tglPw() {
+  const i=$('adminPass'), b=document.querySelector('.pwtog');
+  i.type = i.type==='password' ? 'text' : 'password';
+  b.textContent = i.type==='password' ? '👁' : '🙈';
+}
+
+/* ══ ALERT ══ */
+function showAlert(m, t='err', ico='❌') {
+  $('alertIco').textContent = ico;
+  $('alertMsg').textContent = m;
+  $('loginAlert').className = `alert show ${t}`;
+}
+function clrAlert() { $('loginAlert').className = 'alert'; }
+function setLoad(id,l) { const b=$(id); if(!b)return; b.disabled=l; b.classList.toggle('loading',l); }
+
+/* ══ BACKEND CHECK ══ */
+async function checkBackend() {
+  const dot=$('apiDot'), lbl=$('apiStatus');
+  dot.className='sdot check'; lbl.textContent='Checking backend…';
+  try {
+    const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      dot.className='sdot ok'; lbl.textContent='✅ Backend Online';
+      lbl.style.color='#22c55e';
+      return true;
+    }
+  } catch(e) { /* timeout or refused */ }
+  dot.className='sdot err';
+  lbl.textContent='❌ Backend Offline — Run: python app.py';
+  lbl.style.color='#ef4444';
+  return false;
+}
+
+/* ══════════════════════════════════════════════
+   LOGIN — ONLY admin123 / secure@123 works
+══════════════════════════════════════════════ */
+async function doLogin(e) {
+  e.preventDefault();
+  clrAlert();
+
+  const username = $('adminId').value.trim();
+  const password = $('adminPass').value;
+
+  if (!username || !password) {
+    showAlert('Both Admin ID and Password are required.', 'err', '⚠️');
+    return;
+  }
+
+  // First check if backend is reachable
+  const alive = await checkBackend();
+  if (!alive) {
+    showAlert(
+      'Backend is not running. Open a terminal, go to your backend folder, and run:  python app.py',
+      'err', '⚠️'
+    );
+    return;
+  }
+
+  setLoad('loginBtn', true);
+
+  try {
+    const res = await fetch(`${API}/admin/login`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ username, password }),
+      credentials: 'include',
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      /* Server returned Access Denied */
+      showAlert(data.message || 'Access Denied — Invalid credentials.', 'err', '🚫');
+      $('adminPass').value = '';   // clear password for security
+      return;
+    }
+
+    /* ✅ Login successful */
+    ADMIN_TOKEN = data.admin_token;   // store token for future requests
+    showAlert('Login successful! Loading dashboard…', 'ok', '✅');
+
+    $('loginTime').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+
+    setTimeout(() => showDash(data.admin), 700);
+
+  } catch(err) {
+    showAlert(
+      'Cannot reach the backend. Steps to fix:\n1. Open Command Prompt\n2. cd RasoiExpress\\backend\n3. python app.py',
+      'err', '❌'
+    );
+    console.error('Login fetch error:', err);
+  } finally {
+    setLoad('loginBtn', false);
+  }
+}
+
+/* ══ LOGOUT ══ */
+async function doLogout() {
+  try { await adminFetch('/admin/logout', { method:'POST' }); } catch {}
+  ADMIN_TOKEN = null;
+  $('dashboard').classList.remove('v');
+  $('loginScreen').classList.add('v');
+  $('adminId').value=''; $('adminPass').value='';
+  clrAlert(); toast('Logged out 👋');
+}
+
+/* ══ SHOW DASHBOARD ══ */
+function showDash(adminName) {
+  $('loginScreen').classList.remove('v');
+  $('dashboard').classList.add('v');
+  $('tbName').textContent = adminName || 'admin123';
+  refresh();
+}
+
+/* ══ TABS ══ */
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
+  $(`tab-${name}`).classList.add('active');
+  $(`tc-${name}`).classList.add('active');
+  if (name==='users')  loadUsers();
+  if (name==='orders') loadOrders();
+  if (name==='ov')     loadStats();
+}
+
+async function refresh() {
+  await Promise.all([loadStats(), loadUsers(), loadOrders()]);
+}
+
+/* ══════════════════════════════════════════════
+   STATS
+══════════════════════════════════════════════ */
+async function loadStats() {
+  try {
+    const res = await adminFetch('/admin/stats');
+    if (res.status===401) { handleExpired(); return; }
+    const s = await res.json();
+    $('statsGrid').innerHTML = `
+      <div class="sc blue"><div class="sn" style="color:#60a5fa">${s.total_users}</div><div class="sl">Total Users</div><div class="si">👤</div></div>
+      <div class="sc green"><div class="sn" style="color:#4ade80">${s.total_orders}</div><div class="sl">Total Orders</div><div class="si">📦</div></div>
+      <div class="sc yellow"><div class="sn" style="color:#fcd34d;font-size:1.5rem">₹${Number(s.total_revenue||0).toLocaleString('en-IN')}</div><div class="sl">Total Revenue</div><div class="si">💰</div></div>
+      <div class="sc purple"><div class="sn" style="color:#a78bfa">${s.total_menu}</div><div class="sl">Menu Items</div><div class="si">🍽️</div></div>
+      <div class="sc green"><div class="sn" style="color:#86efac">${s.delivered}</div><div class="sl">Delivered</div><div class="si">✅</div></div>
+      <div class="sc orange"><div class="sn" style="color:#fdba74">${s.active_orders}</div><div class="sl">Active Orders</div><div class="si">🔄</div></div>`;
+  } catch(e) {
+    $('statsGrid').innerHTML=`<div style="color:#fca5a5;padding:16px">❌ ${e.message}</div>`;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   USERS
+══════════════════════════════════════════════ */
+async function loadUsers() {
+  $('uBody').innerHTML=`<tr><td colspan="10"><div class="lb"><div class="sp"></div>Fetching all users from database…</div></td></tr>`;
+  try {
+    const res = await adminFetch('/admin/users');
+    if (res.status===401) { handleExpired(); return; }
+    const d = await res.json();
+    allUsers = d.users || [];
+    $('uCnt').textContent = `${allUsers.length} user${allUsers.length!==1?'s':''}`;
+    renderU(allUsers);
+  } catch(e) {
+    $('uBody').innerHTML=`<tr><td colspan="10"><div class="lb" style="color:#fca5a5">❌ ${e.message}</div></td></tr>`;
+  }
+}
+
+function renderU(rows) {
+  if (!rows.length) {
+    $('uBody').innerHTML=`<tr><td colspan="10" style="text-align:center;padding:38px;color:var(--sub)">No users found in database.</td></tr>`;
+    return;
+  }
+  $('uBody').innerHTML = rows.map((u,i) => `
+    <tr>
+      <td class="mu">${i+1}</td>
+      <td>
+        <div class="uc">
+          <div class="uav" style="background:linear-gradient(135deg,${u.profile_color||'#1d4ed8'},#0369a1)">${ini(u.name)}</div>
+          <div>
+            <div style="font-weight:700;color:var(--text)">${u.name}</div>
+            <div class="mu">ID #${u.id}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="mono">${u.email}</span></td>
+      <td>${u.phone||'<span class="mu">—</span>'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="mu">${u.address||'—'}</td>
+      <td><span class="pill ${u.total_orders>0?'p-active':'p-none'}">${u.total_orders} order${u.total_orders!==1?'s':''}</span></td>
+      <td><strong style="color:#fcd34d">₹${Number(u.total_spent||0).toLocaleString('en-IN')}</strong></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:13px;height:13px;border-radius:50%;background:${u.profile_color||'#1A6FB3'};border:2px solid var(--border)"></div>
+          <span class="mu">${u.profile_color||'—'}</span>
+        </div>
+      </td>
+      <td class="mu">${fmtD(u.created_at)}</td>
+      <td>
+        <div class="arow">
+          <button class="act-btn" onclick="openU(${u.id})">🔍 View</button>
+          <button class="act-btn d" onclick="startDel(${u.id},'${u.name.replace(/'/g,"\\'")}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterU(q) {
+  const f=q.toLowerCase();
+  renderU(allUsers.filter(u=>(u.name||'').toLowerCase().includes(f)||(u.email||'').toLowerCase().includes(f)||(u.phone||'').toLowerCase().includes(f)));
+}
+
+function exportUsers() {
+  if (!allUsers.length) { toast('No data to export','err'); return; }
+  dlCSV('admin_users.csv',
+    allUsers.map(u=>[u.id,u.name,u.email,u.phone||'',u.address||'',u.total_orders,u.total_spent,u.profile_color,fmtD(u.created_at)]),
+    ['ID','Name','Email','Phone','Address','Total Orders','Total Spent','Profile Color','Joined']);
+}
+
+/* ══ USER DETAIL MODAL ══ */
+async function openU(uid) {
+  viewUid = uid;
+  $('uModalTitle').textContent = `👤 User #${uid} — Full Details`;
+  $('uModalBody').innerHTML = `<div class="lb"><div class="sp"></div>Loading…</div>`;
+  openM('uModal');
+  try {
+    const res = await adminFetch(`/admin/users/${uid}`);
+    if (!res.ok) { $('uModalBody').innerHTML=`<div style="color:#fca5a5;padding:16px">User not found.</div>`; return; }
+    const { user } = await res.json();
+    const oRows = (user.orders||[]).slice(0,5).map(o=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(30,45,69,.4);font-size:.79rem;gap:10px">
+        <div><span class="mono" style="font-size:.7rem">${o.id}</span><div class="mu">${o.restaurant||'—'}</div></div>
+        <div>${spill(o.status)}</div>
+        <div style="text-align:right"><strong style="color:#fcd34d">₹${o.total}</strong><div class="mu">${fmtD(o.placed_at)}</div></div>
+      </div>`).join('');
+    $('uModalBody').innerHTML = `
+      <div style="display:flex;align-items:center;gap:13px;margin-bottom:18px;padding:14px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,${user.profile_color||'#1d4ed8'},#0369a1);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;color:#fff;flex-shrink:0;border:3px solid var(--border)">${ini(user.name)}</div>
+        <div><div style="font-size:1rem;font-weight:900;color:var(--text)">${user.name}</div><div class="mono" style="font-size:.76rem">${user.email}</div><div class="mu" style="margin-top:2px">ID #${user.id}</div></div>
+      </div>
+      <div class="dr"><div class="dl">User ID</div><div class="dv"><span class="mono">#${user.id}</span></div></div>
+      <div class="dr"><div class="dl">Full Name</div><div class="dv">${user.name}</div></div>
+      <div class="dr"><div class="dl">Email</div><div class="dv"><span class="mono">${user.email}</span></div></div>
+      <div class="dr"><div class="dl">Phone</div><div class="dv">${user.phone||'<span style="color:var(--sub)">Not provided</span>'}</div></div>
+      <div class="dr"><div class="dl">Address</div><div class="dv">${user.address||'<span style="color:var(--sub)">Not provided</span>'}</div></div>
+      <div class="dr"><div class="dl">Profile Color</div><div class="dv" style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div style="width:15px;height:15px;border-radius:50%;background:${user.profile_color||'#1A6FB3'};border:2px solid var(--border)"></div>${user.profile_color||'—'}</div></div>
+      <div class="dr"><div class="dl">Joined</div><div class="dv">${fmtD(user.created_at)}</div></div>
+      <div class="dr"><div class="dl">Total Orders</div><div class="dv"><span class="pill p-active">${user.orders?.length||0} orders</span></div></div>
+      ${user.orders?.length ? `
+        <div style="margin-top:18px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--sub);margin-bottom:9px">📦 Recent Orders</div>
+        ${oRows}
+        ${user.orders.length>5?`<div style="text-align:center;padding:7px;font-size:.73rem;color:var(--sub)">+${user.orders.length-5} more orders</div>`:''}
+      ` : `<div style="margin-top:14px;text-align:center;color:var(--sub);font-size:.81rem;padding:14px;background:var(--card2);border-radius:8px">No orders placed yet.</div>`}`;
+  } catch(e) { $('uModalBody').innerHTML=`<div style="color:#fca5a5">Error: ${e.message}</div>`; }
+}
+
+/* ══ DELETE USER ══ */
+function prepDelete() {
+  if (viewUid) {
+    const u=allUsers.find(x=>x.id===viewUid);
+    startDel(viewUid, u?.name||`User #${viewUid}`);
+  }
+}
+function startDel(uid, name) {
+  delUid=uid;
+  $('cMsg').textContent=`Delete "${name}" (ID #${uid})?`;
+  openM('cModal');
+}
+async function execDelete() {
+  if (!delUid) return;
+  $('cBtn').textContent='⏳ Deleting…'; $('cBtn').disabled=true;
+  try {
+    const res = await adminFetch(`/admin/users/${delUid}`, { method:'DELETE' });
+    const d   = await res.json();
+    if (!res.ok) { toast(d.error||'Delete failed','err'); return; }
+    toast(`✅ ${d.message}`);
+    closeM('cModal'); closeM('uModal');
+    await refresh();
+  } catch(e) { toast('Delete failed: '+e.message,'err'); }
+  finally { $('cBtn').textContent='🗑️ Yes, Delete Permanently'; $('cBtn').disabled=false; delUid=null; }
+}
+
+/* ══════════════════════════════════════════════
+   ORDERS
+══════════════════════════════════════════════ */
+async function loadOrders() {
+  $('oBody').innerHTML=`<tr><td colspan="10"><div class="lb"><div class="sp"></div>Fetching all orders from database…</div></td></tr>`;
+  try {
+    const res = await adminFetch('/admin/orders');
+    if (res.status===401) { handleExpired(); return; }
+    const d = await res.json();
+    allOrders = d.orders||[];
+    $('oCnt').textContent=`${allOrders.length} order${allOrders.length!==1?'s':''} · ₹${Number(d.total_revenue||0).toLocaleString('en-IN')} revenue`;
+    renderO(allOrders);
+  } catch(e) {
+    $('oBody').innerHTML=`<tr><td colspan="10"><div class="lb" style="color:#fca5a5">❌ ${e.message}</div></td></tr>`;
+  }
+}
+
+function renderO(orders) {
+  if (!orders.length) {
+    $('oBody').innerHTML=`<tr><td colspan="10" style="text-align:center;padding:38px;color:var(--sub)">No orders found.</td></tr>`;
+    return;
+  }
+  $('oBody').innerHTML = orders.map(o=>`
+    <tr>
+      <td><span class="mono">${o.id}</span></td>
+      <td><div style="font-weight:700;font-size:.8rem">${o.user_name||'—'}</div><div class="mu">${o.user_email||''}</div></td>
+      <td>${spill(o.status)}</td>
+      <td>${sbar(o.current_step)}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ilist(o.items)}</td>
+      <td><strong style="color:#fcd34d">₹${(o.total||0).toLocaleString('en-IN')}</strong></td>
+      <td class="mu">${o.restaurant||'—'}</td>
+      <td class="mu" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.address||'—'}</td>
+      <td class="mu">${fmtD(o.placed_at)}</td>
+      <td><button class="act-btn" onclick="openU(${o.user_id})">👤 User</button></td>
+    </tr>`).join('');
+}
+
+function filterO(q) {
+  const f=(q||$('oSrch').value||'').toLowerCase();
+  const sf=$('oSF').value;
+  renderO(allOrders.filter(o=>
+    (!f||(o.id||'').toLowerCase().includes(f)||(o.user_name||'').toLowerCase().includes(f)||(o.restaurant||'').toLowerCase().includes(f))&&
+    (!sf||o.status===sf)));
+}
+
+function exportOrders() {
+  if (!allOrders.length) { toast('No order data','err'); return; }
+  dlCSV('admin_orders.csv',
+    allOrders.map(o=>[o.id,o.user_id,o.user_name||'',o.user_email||'',o.status,o.current_step,ilist(o.items).replace(/<[^>]*>/g,''),o.total,o.restaurant,o.address,fmtD(o.placed_at)]),
+    ['Order ID','User ID','User Name','User Email','Status','Step','Items','Total','Restaurant','Address','Placed At']);
+}
+
+/* ══ SESSION EXPIRED ══ */
+function handleExpired() {
+  toast('Admin session expired. Please log in again.','err');
+  ADMIN_TOKEN=null;
+  setTimeout(doLogout, 1500);
+}
+
+/* ══ MODALS ══ */
+function openM(id)  { $(id).classList.add('open'); }
+function closeM(id) { $(id).classList.remove('open'); viewUid=null; }
+document.addEventListener('click', e=>{ if(e.target.classList.contains('mo')) e.target.classList.remove('open'); });
+
+/* ══════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════ */
+(async () => {
+  // Show login screen first
+  $('loginScreen').classList.add('v');
+  $('adminId').focus();
+
+  // Check backend health
+  await checkBackend();
+})();
+</script>
+</body>
+</html>
